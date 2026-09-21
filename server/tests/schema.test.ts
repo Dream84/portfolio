@@ -17,7 +17,7 @@ describe("任务 1 数据层基座", () => {
     expect(() =>
       db.run("INSERT INTO category (key, name, level, parent_key, preset, color_token, sort_order) VALUES ('x','孤儿','L2',NULL,0,'chart-1',1)"),
     ).toThrow();
-    db.run("INSERT INTO category (key, name, level, parent_key, preset, color_token, sort_order) VALUES ('l1','一级','L1','l1',0,'chart-1',1)");
+    db.run("INSERT INTO category (key, name, level, parent_key, preset, color_token, sort_order) VALUES ('l1','一级','L1',NULL,0,'chart-1',1)");
     const rows = db.exec("SELECT level, parent_key FROM category WHERE key='l1'");
     expect(rows.length).toBe(1);
   });
