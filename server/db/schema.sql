@@ -1,0 +1,72 @@
+-- MyPortfolio 数据结构（本地单机 SQLite）
+CREATE TABLE IF NOT EXISTS account (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  account_type TEXT NOT NULL CHECK (account_type IN ('BROKER','BANK','FUND_PLATFORM','OTHER')),
+  status TEXT NOT NULL DEFAULT 'ENABLED' CHECK (status IN ('ENABLED','DISABLED'))
+);
+
+CREATE TABLE IF NOT EXISTS cash_account (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL REFERENCES account(id),
+  name TEXT NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'CNY' CHECK (currency IN ('CNY','USD','HKD','EUR','JPY')),
+  amount_original REAL NOT NULL DEFAULT 0 CHECK (amount_original >= 0),
+  fx_rate REAL NOT NULL DEFAULT 1 CHECK (fx_rate > 0),
+  fx_rate_time TEXT,
+  fx_overridden INTEGER NOT NULL DEFAULT 0 CHECK (fx_overridden IN (0,1))
+);
+
+CREATE TABLE IF NOT EXISTS portfolio (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_account (
+  portfolio_id TEXT NOT NULL REFERENCES portfolio(id),
+  account_id TEXT NOT NULL REFERENCES account(id),
+  PRIMARY KEY (portfolio_id, account_id)
+);
+
+CREATE TABLE IF NOT EXISTS category (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  level TEXT NOT NULL CHECK (level IN ('L1','L2')),
+  parent_key TEXT REFERENCES category(key),
+  preset INTEGER NOT NULL DEFAULT 0 CHECK (preset IN (0,1)),
+  color_token TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  CHECK ((level = 'L2' AND parent_key IS NOT NULL) OR (level = 'L1' AND parent_key IS NULL))
+);
+
+CREATE TABLE IF NOT EXISTS holding (
+  id TEXT PRIMARY KEY,
+  portfolio_id TEXT NOT NULL REFERENCES portfolio(id),
+  account_id TEXT NOT NULL REFERENCES account(id),
+  symbol TEXT NOT NULL,
+  name TEXT NOT NULL,
+  category_key TEXT NOT NULL REFERENCES category(key),
+  quantity REAL NOT NULL CHECK (quantity > 0),
+  cost_price REAL NOT NULL CHECK (cost_price > 0),
+  cost_overridden INTEGER NOT NULL DEFAULT 0 CHECK (cost_overridden IN (0,1)),
+  UNIQUE (account_id, symbol)
+);
+
+CREATE TABLE IF NOT EXISTS quote (
+  symbol TEXT PRIMARY KEY,
+  kind TEXT NOT NULL CHECK (kind IN ('PRICE','NAV')),
+  price REAL NOT NULL CHECK (price > 0),
+  price_time TEXT NOT NULL,
+  is_cache INTEGER NOT NULL DEFAULT 0 CHECK (is_cache IN (0,1))
+);
+
+CREATE TABLE IF NOT EXISTS snapshot (
+  id TEXT PRIMARY KEY,
+  account_id TEXT,
+  snapshot_date TEXT NOT NULL,
+  dimension_type TEXT NOT NULL CHECK (dimension_type IN ('PORTFOLIO','ACCOUNT','CATEGORY')),
+  total_value REAL NOT NULL,
+  net_investment REAL NOT NULL,
+  cumulative_return REAL NOT NULL,
+  UNIQUE (account_id, snapshot_date, dimension_type)
+);

@@ -1,0 +1,19 @@
+{
+  "name": "myportfolio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "sql.js": "^1.10.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/sql.js": "^1.4.9",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.8"
+  }
+}
