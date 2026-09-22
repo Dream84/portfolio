@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f6f7f9;
+  --color-foreground: #1f2329;
+  --color-card: #ffffff;
+  --color-card-foreground: #1f2329;
+  --color-muted: #f6f7f9;
+  --color-muted-foreground: #646a73;
+  --color-border: #e5e6eb;
+  --color-input: #e5e6eb;
+  --color-primary: #2563eb;
+  --color-primary-strong: #1d4ed8;
+  --color-primary-soft: #eaf1ff;
+  --color-primary-foreground: #ffffff;
+  --color-destructive: #b91c1c;
+  --color-destructive-foreground: #ffffff;
+  --color-pnl-up: #d4380d;
+  --color-pnl-down: #0e9f6e;
+  --color-pnl-flat: #646a73;
+  --color-warning: #d97706;
+  --color-info: #0ea5e9;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --font-sans: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+/* 暗色主题（DESIGN.md 暗色映射）：覆盖同名 token 变量即可让 Tailwind 工具类跟随切换 */
+.dark {
+  --color-background: #0f1115;
+  --color-foreground: #e6e8eb;
+  --color-card: #191b20;
+  --color-card-foreground: #e6e8eb;
+  --color-muted: #1f2228;
+  --color-muted-foreground: #9aa0a6;
+  --color-border: #2a2d34;
+  --color-input: #2a2d34;
+  --color-primary: #3b82f6;
+  --color-primary-strong: #60a5fa;
+  --color-primary-soft: #1e293b;
+  --color-pnl-up: #f87171;
+  --color-pnl-down: #34d399;
+  --color-pnl-flat: #9aa0a6;
+  --color-warning: #fbbf24;
+  --color-info: #22d3ee;
+}
