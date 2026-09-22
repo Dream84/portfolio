@@ -5,6 +5,8 @@ import { addCategory, listCategories, removeCategory } from "./services/category
 import { listHoldings, saveHolding } from "./services/holdingService.ts";
 import { listAccountsOfPortfolio } from "./seed.ts";
 import { query } from "./db/database.ts";
+import { queryAnalytics } from "./services/analyticsService.ts";
+import { generateSnapshot, regenerateSnapshots } from "./services/snapshotService.ts";
 
 type Payload = Record<string, unknown>;
 
@@ -39,6 +41,35 @@ export function createServer(db: Database): http.Server {
       }
       if (req.method === "GET" && url.pathname === "/api/categories") {
         return send(res, 200, { categories: listCategories(db) });
+      }
+      if (req.method === "GET" && url.pathname === "/api/analytics") {
+        const result = queryAnalytics(db, {
+          portfolioId,
+          dimension: (url.searchParams.get("dimension") as "PORTFOLIO" | "ACCOUNT") ?? "PORTFOLIO",
+          scope: url.searchParams.get("scope") ?? "family",
+          l1Key: url.searchParams.get("l1Key") ?? "all",
+          l2Key: url.searchParams.get("l2Key") ?? "all",
+          rangeKey: (url.searchParams.get("rangeKey") as "6M" | "1Y" | "3Y" | "5Y" | "CUSTOM") ?? "6M",
+          start: url.searchParams.get("start") ?? undefined,
+          end: url.searchParams.get("end") ?? undefined,
+        });
+        return send(res, result.ok ? 200 : 400, result);
+      }
+      if (req.method === "POST" && url.pathname === "/api/snapshots/generate") {
+        const body = await readBody(req);
+        const result = generateSnapshot(db, {
+          accountId: (body.accountId as string) ?? portfolioId,
+          date: body.date as string,
+        });
+        return send(res, result.ok ? 200 : 400, result);
+      }
+      if (req.method === "POST" && url.pathname === "/api/snapshots/regenerate") {
+        const body = await readBody(req);
+        const result = regenerateSnapshots(db, {
+          accountId: (body.accountId as string) ?? portfolioId,
+          dates: (body.dates as string[]) ?? [],
+        });
+        return send(res, result.ok ? 200 : 409, result);
       }
       if (req.method === "GET" && url.pathname === "/api/quotes") {
         const rows = query(db, "SELECT symbol, kind, price, price_time, is_cache FROM quote ORDER BY symbol");

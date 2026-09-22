@@ -64,11 +64,40 @@ export function seedQuotes(db: Database): void {
   run(db, "INSERT INTO quote (symbol, kind, price, price_time, is_cache) VALUES (?,?,?,?,?)", ["004400", "NAV", 1.0743, "2026-09-18", 1]);
 }
 
+const SNAPSHOT_SERIES: Array<[string, number, number]> = [
+  ["2026-09-01", 201480.0, 1.2],
+  ["2026-09-02", 202350.0, 1.63],
+  ["2026-09-03", 201760.0, 1.34],
+  ["2026-09-04", 203640.0, 2.28],
+  ["2026-09-08", 204510.0, 2.72],
+  ["2026-09-09", 203980.0, 2.45],
+  ["2026-09-10", 205260.0, 3.09],
+  ["2026-09-15", 205970.0, 3.45],
+  ["2026-09-16", 206120.0, 3.52],
+  ["2026-09-17", 205640.0, 3.28],
+  ["2026-09-18", 206666.0, 3.8],
+];
+
+export function seedSnapshots(db: Database): void {
+  SNAPSHOT_SERIES.forEach(([date, value, rate], index) => {
+    run(
+      db,
+      "INSERT INTO snapshot (id, account_id, snapshot_date, dimension_type, total_value, net_investment, cumulative_return) VALUES (?,?,?,?,?,?,?)",
+      [`snap-${index + 1}`, "family", date, "PORTFOLIO", value, 199100, rate],
+    );
+  });
+}
+
+export function expectedSnapshotDates(): string[] {
+  return SNAPSHOT_SERIES.map(([date]) => date);
+}
+
 export function seedAll(db: Database): void {
   seedCategories(db);
   seedAccounts(db);
   seedHoldings(db);
   seedQuotes(db);
+  seedSnapshots(db);
 }
 
 export function listAccountsOfPortfolio(db: Database, portfolioId: string): string[] {
