@@ -70,3 +70,47 @@ CREATE TABLE IF NOT EXISTS snapshot (
   cumulative_return REAL NOT NULL,
   UNIQUE (account_id, snapshot_date, dimension_type)
 );
+
+CREATE TABLE IF NOT EXISTS user (
+  id TEXT PRIMARY KEY,
+  account_name TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','LOCKED')),
+  failed_count INTEGER NOT NULL DEFAULT 0,
+  locked_until TEXT
+);
+
+CREATE TABLE IF NOT EXISTS session (
+  token TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES user(id),
+  created_at TEXT NOT NULL,
+  last_active_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS audit (
+  id TEXT PRIMARY KEY,
+  actor TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target TEXT,
+  before_value TEXT,
+  after_value TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS backup (
+  id TEXT PRIMARY KEY,
+  file_path TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS preference (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fx_rate (
+  currency TEXT NOT NULL,
+  rate REAL NOT NULL,
+  rate_time TEXT NOT NULL
+);
