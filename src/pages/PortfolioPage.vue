@@ -80,6 +80,7 @@ const holdings = computed(() => {
 
 const quotePrice = ref<Record<string, number>>({});
 const quoteTime = ref<Record<string, string>>({});
+const quoteStale = ref<Record<string, boolean>>({});
 
 function loadQuoteCache() {
   const rows = (summary.value?.shares ?? []).length;
@@ -110,15 +111,18 @@ async function loadAll() {
 async function loadQuotes() {
   const res = await fetch(`/api/quotes`);
   if (!res.ok) return;
-  const body = (await res.json()) as { quotes: Array<{ symbol: string; price: number; priceTime: string }> };
+  const body = (await res.json()) as { quotes: Array<{ symbol: string; price: number; priceTime: string; stale: boolean }> };
   const prices: Record<string, number> = {};
   const times: Record<string, string> = {};
+  const stale: Record<string, boolean> = {};
   body.quotes.forEach((item) => {
     prices[item.symbol] = item.price;
     times[item.symbol] = item.priceTime;
+    stale[item.symbol] = item.stale;
   });
   quotePrice.value = prices;
   quoteTime.value = times;
+  quoteStale.value = stale;
 }
 
 onMounted(async () => {
@@ -262,7 +266,7 @@ const toggleExpand = (key: string) => {
           <p class="text-xs text-muted-foreground">分类占比（仅一级分类）</p>
           <div class="mt-2 flex flex-wrap items-center gap-4">
             <div ref="chartRef" class="h-[220px] min-w-[200px] flex-1"></div>
-            <ul class="grid gap-1 text-xs">
+            <ul class="grid gap-1 text-xs" data-testid="portfolio-pie-legend">
               <li v-for="row in summary?.shares ?? []" :key="row.key" class="flex items-center gap-2">
                 <span class="inline-block h-2.5 w-2.5 rounded-sm" :style="{ backgroundColor: colorOf(row.colorToken).value }"></span>
                 <span class="font-medium">{{ colorOf(row.colorToken).name }}色：{{ row.name }}</span>
@@ -391,7 +395,10 @@ const toggleExpand = (key: string) => {
               <td class="px-3 py-2 text-right font-mono tabular-nums">{{ formatMoney(row.marketValue) }}</td>
               <td class="px-3 py-2 text-right font-mono tabular-nums" :class="pnlClass(row.pnl)">{{ formatMoney(row.pnl) }}</td>
               <td class="px-3 py-2 text-right font-mono tabular-nums" :class="pnlClass(row.pnl)">{{ formatPct((row.price / row.costPrice - 1) * 100) }}</td>
-              <td class="px-3 py-2 font-mono text-xs text-muted-foreground tabular-nums">{{ quoteTime[row.symbol] ?? "—" }}</td>
+              <td class="px-3 py-2 text-xs text-muted-foreground">
+                <span class="font-mono tabular-nums">{{ quoteTime[row.symbol] ?? "—" }}</span>
+                <span v-if="quoteStale[row.symbol]" class="ml-2 text-warning" data-testid="portfolio-row-cache-badge">缓存数据</span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -437,7 +444,7 @@ const toggleExpand = (key: string) => {
     </div>
 
     <div v-if="categoryDrawerOpen" class="fixed inset-0 z-30 flex justify-end bg-[rgba(31,35,41,0.24)]">
-      <section class="h-full w-[440px] overflow-y-auto bg-card p-5 shadow-[0_4px_16px_rgba(31,35,41,0.08)]">
+      <section class="h-full w-[440px] overflow-y-auto bg-card p-5 shadow-[0_4px_16px_rgba(31,35,41,0.08)]" data-testid="portfolio-dialog-category">
         <header class="flex items-center justify-between">
           <h3 class="text-base font-semibold">分类管理</h3>
           <Button type="button" variant="ghost" size="sm" data-testid="portfolio-dialog-category-action-close" @click="categoryDrawerOpen = false">关闭</Button>

@@ -6,6 +6,9 @@ defineOptions({
   inheritAttrs: false,
 });
 
+const props = defineProps<{ modelValue?: string }>();
+const emit = defineEmits<{ "update:modelValue": [string] }>();
+
 const attrs = useAttrs();
 const forwardedAttrs = computed(() => {
   const { class: _class, ...rest } = attrs;
@@ -21,5 +24,11 @@ const classes = computed(() =>
 </script>
 
 <template>
-  <input type="date" v-bind="forwardedAttrs" :class="classes" />
+  <input
+    type="date"
+    :value="props.modelValue"
+    v-bind="forwardedAttrs"
+    :class="classes"
+    @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+  />
 </template>
