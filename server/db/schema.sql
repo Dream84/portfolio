@@ -114,3 +114,33 @@ CREATE TABLE IF NOT EXISTS fx_rate (
   rate REAL NOT NULL,
   rate_time TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS trade (
+  id TEXT PRIMARY KEY,
+  portfolio_id TEXT NOT NULL,
+  account_id TEXT NOT NULL,
+  cash_account_id TEXT,
+  symbol TEXT,
+  name TEXT,
+  trade_type TEXT NOT NULL CHECK (trade_type IN ('BUY','SELL','DIVIDEND_CASH','DIVIDEND_REINVEST','INCOME','EXPENSE','TRANSFER_OUT','TRANSFER_IN')),
+  trade_date TEXT NOT NULL,
+  amount REAL NOT NULL CHECK (amount >= 0),
+  quantity REAL,
+  price REAL,
+  fee REAL NOT NULL DEFAULT 0 CHECK (fee >= 0),
+  fee_mode TEXT NOT NULL DEFAULT 'INTO_COST' CHECK (fee_mode IN ('INTO_COST','OFFSET_PNL')),
+  realized_pnl REAL,
+  transfer_group_id TEXT,
+  version INTEGER NOT NULL DEFAULT 1,
+  deleted_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS trade_undo (
+  trade_id TEXT PRIMARY KEY,
+  cash_account_id TEXT,
+  cash_delta REAL NOT NULL DEFAULT 0,
+  symbol TEXT,
+  quantity_before REAL,
+  cost_before REAL,
+  expires_at TEXT NOT NULL
+);
