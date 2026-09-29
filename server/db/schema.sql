@@ -144,3 +144,43 @@ CREATE TABLE IF NOT EXISTS trade_undo (
   cost_before REAL,
   expires_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS provider (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('QUOTE','NAV','FX')),
+  priority INTEGER NOT NULL DEFAULT 1,
+  enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0,1)),
+  timeout_seconds INTEGER NOT NULL DEFAULT 3,
+  url TEXT NOT NULL,
+  last_check_at TEXT,
+  last_check_status TEXT,
+  last_check_message TEXT
+);
+
+CREATE TABLE IF NOT EXISTS nav (
+  id TEXT PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  nav_date TEXT NOT NULL,
+  unit_nav REAL NOT NULL,
+  dividend REAL NOT NULL DEFAULT 0,
+  UNIQUE (symbol, nav_date)
+);
+
+CREATE TABLE IF NOT EXISTS fetch_log (
+  id TEXT PRIMARY KEY,
+  level TEXT NOT NULL,
+  symbol TEXT,
+  message TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS refresh_state (
+  symbol TEXT PRIMARY KEY,
+  last_request_at TEXT,
+  expires_at TEXT,
+  is_cache INTEGER NOT NULL DEFAULT 0 CHECK (is_cache IN (0,1)),
+  data_time TEXT,
+  failure_reason TEXT,
+  consecutive_failures INTEGER NOT NULL DEFAULT 0
+);
