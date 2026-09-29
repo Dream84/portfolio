@@ -40,15 +40,15 @@ export function saveProvider(
   }
   const id = input.id ?? `src-${input.kind.toLowerCase()}-${input.name}`;
   const enabled = input.enabled === false ? 0 : 1;
+  const others = query(db, "SELECT id FROM provider WHERE enabled=1 AND id<>?", [input.id ?? ""]);
+  if (enabled === 0 && !others.length) {
+    return { ok: false, message: "请至少启用一个数据源", timeoutSeconds: timeout.timeoutSeconds };
+  }
   run(
     db,
     "INSERT INTO provider (id, name, kind, priority, enabled, timeout_seconds, url) VALUES (?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name, priority=excluded.priority, enabled=excluded.enabled, timeout_seconds=excluded.timeout_seconds",
     [id, input.name, input.kind, input.priority ?? 1, enabled, timeout.timeoutSeconds, input.url ?? `https://${ALLOWED_HOSTS[0]}/`],
   );
-  const active = query(db, "SELECT id FROM provider WHERE enabled=1");
-  if (!active.length) {
-    return { ok: false, id, message: "请至少启用一个数据源", timeoutSeconds: timeout.timeoutSeconds };
-  }
   return { ok: true, id, timeoutSeconds: timeout.timeoutSeconds, message: timeout.message };
 }
 

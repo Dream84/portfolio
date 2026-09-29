@@ -92,7 +92,17 @@ export function expectedSnapshotDates(): string[] {
   return SNAPSHOT_SERIES.map(([date]) => date);
 }
 
+export function seedMarketSources(db: Database): void {
+  run(db, "INSERT INTO account (id, name, account_type, status) VALUES (?,?,?,?)", ["e2e-wallet", "E2E 测试账户", "OTHER", "ENABLED"]);
+  run(db, "INSERT INTO provider (id, name, kind, priority, enabled, timeout_seconds, url) VALUES (?,?,?,?,?,?,?)", ["src-quote-a", "腾讯行情", "QUOTE", 1, 1, 3, "https://qt.gtimg.cn/"]);
+  run(db, "INSERT INTO provider (id, name, kind, priority, enabled, timeout_seconds, url) VALUES (?,?,?,?,?,?,?)", ["src-quote-b", "新浪财经", "QUOTE", 2, 1, 3, "https://hq.sinajs.cn/"]);
+  run(db, "INSERT INTO provider (id, name, kind, priority, enabled, timeout_seconds, url) VALUES (?,?,?,?,?,?,?)", ["src-nav-a", "天天基金净值", "NAV", 1, 1, 3, "https://fund.eastmoney.com/"]);
+  run(db, "INSERT INTO nav (id, symbol, nav_date, unit_nav, dividend) VALUES (?,?,?,?,?)", ["nav-1", "004400", "2026-09-16", 1.0743, 0]);
+  run(db, "INSERT INTO nav (id, symbol, nav_date, unit_nav, dividend) VALUES (?,?,?,?,?)", ["nav-2", "004400", "2026-09-17", 1.0789, 0]);
+}
+
 export function seedAll(db: Database): void {
+  seedMarketSources(db);
   seedCategories(db);
   seedAccounts(db);
   seedHoldings(db);

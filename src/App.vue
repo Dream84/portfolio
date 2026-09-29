@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-vue-next";
 import PortfolioPage from "@/pages/PortfolioPage.vue";
 import AnalyticsPage from "@/pages/AnalyticsPage.vue";
+import AccountsPage from "@/pages/AccountsPage.vue";
+import TradesPage from "@/pages/TradesPage.vue";
+import DataSourcesPage from "@/pages/DataSourcesPage.vue";
 
 type ShellPageItem = {
   id: string;
@@ -28,13 +31,30 @@ const pages: ShellPageItem[] = [
     testId: "shell-nav-analytics",
     component: AnalyticsPage,
   },
+  {
+    id: "accounts",
+    label: "账户与现金",
+    route: "/accounts",
+    testId: "shell-nav-accounts",
+    component: AccountsPage,
+  },
+  {
+    id: "trades",
+    label: "交易与现金",
+    route: "/trades",
+    testId: "shell-nav-trades",
+    component: TradesPage,
+  },
+  {
+    id: "data-sources",
+    label: "数据源",
+    route: "/data-sources",
+    testId: "shell-nav-data-sources",
+    component: DataSourcesPage,
+  },
 ];
 
-const pendingPages = [
-  { label: "账户与现金", route: "/accounts" },
-  { label: "交易与现金", route: "/trades" },
-  { label: "数据源", route: "/data-sources" },
-];
+const pendingPages: Array<{ label: string; route: string }> = [];
 
 const activePageId = ref("portfolio");
 const sidebarVisible = ref(true);
@@ -93,7 +113,6 @@ function refreshQuotes() {
             {{ page.label }}
           </Button>
 
-          <p class="px-2 pt-3 pb-1 text-xs text-muted-foreground">本轮未出原型</p>
           <Button
             v-for="page in pendingPages"
             :key="page.route"

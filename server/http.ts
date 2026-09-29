@@ -7,6 +7,7 @@ import { listAccountsOfPortfolio } from "./seed.ts";
 import { query } from "./db/database.ts";
 import { queryAnalytics } from "./services/analyticsService.ts";
 import { generateSnapshot, regenerateSnapshots } from "./services/snapshotService.ts";
+import { handleShellRoute } from "./routes/shellRoutes.ts";
 
 type Payload = Record<string, unknown>;
 
@@ -116,6 +117,7 @@ export function createServer(db: Database): http.Server {
         });
         return send(res, result.ok ? 200 : 400, result);
       }
+      if (await handleShellRoute(db, req, res, url, send, readBody)) return undefined;
       return send(res, 404, { message: "接口不存在" });
     } catch (error) {
       return send(res, 500, { message: error instanceof Error ? error.message : String(error) });

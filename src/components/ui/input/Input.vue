@@ -6,6 +6,12 @@ defineOptions({
   inheritAttrs: false,
 });
 
+const props = withDefaults(defineProps<{ modelValue?: string | number; type?: string }>(), {
+  modelValue: undefined,
+  type: "text",
+});
+const emit = defineEmits<{ "update:modelValue": [string] }>();
+
 const attrs = useAttrs();
 const forwardedAttrs = computed(() => {
   const { class: _class, ...rest } = attrs;
@@ -18,8 +24,18 @@ const classes = computed(() =>
     attrs.class as string | undefined,
   ),
 );
+
+const currentValue = computed(() => {
+  if (props.modelValue !== undefined) return props.modelValue;
+  const legacy = (attrs as Record<string, unknown>).value;
+  return (legacy as string | number | undefined) ?? "";
+});
+
+function onInput(event: Event) {
+  emit("update:modelValue", (event.target as HTMLInputElement).value);
+}
 </script>
 
 <template>
-  <input v-bind="forwardedAttrs" :class="classes" />
+  <input v-bind="forwardedAttrs" :type="props.type" :value="currentValue" :class="classes" @input="onInput" />
 </template>

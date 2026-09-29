@@ -5,6 +5,7 @@ export default defineConfig({
   timeout: 60000,
   expect: { timeout: 10000 },
   reporter: [["list"]],
+  workers: 1,
   use: {
     baseURL: "http://127.0.0.1:5183",
     trace: "off",
