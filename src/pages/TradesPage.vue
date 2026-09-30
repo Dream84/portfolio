@@ -37,6 +37,8 @@ async function load() {
   cashRows.value = (cash.rows ?? []) as CashRow[];
   const accountData = await call("/api/accounts");
   accounts.value = (accountData.rows ?? []) as AccountRow[];
+  accountList.value = (accountData.rows ?? []) as Array<Record<string, unknown>>;
+  accountEmpty.value = (accountData.emptyMessage as string | null) ?? null;
   if (!form.value.cashAccountId && cashRows.value.length) form.value.cashAccountId = cashRows.value[0].id;
   if (!form.value.accountId && accounts.value.length) form.value.accountId = accounts.value[0].id;
 }
