@@ -16,7 +16,8 @@ describe("AC-054 快照不足时不绘制曲线", () => {
     seedAccounts(db);
     seedHoldings(db);
     seedQuotes(db);
-    const result = queryAnalytics(db, {
+    seedSnapshots(db);
+    const outOfRange = queryAnalytics(db, {
       portfolioId: "family",
       dimension: "PORTFOLIO",
       scope: "family",
@@ -26,9 +27,25 @@ describe("AC-054 快照不足时不绘制曲线", () => {
       start: "2030-01-01",
       end: "2030-12-31",
     });
-    expect(result.ok).toBe(true);
-    expect((result.series ?? []).length).toBeLessThan(2);
-    expect(result.metrics?.marketValue).toBeGreaterThanOrEqual(0);
+    expect(outOfRange.ok).toBe(true);
+    expect(outOfRange.insufficient).toBe(true);
+    expect((outOfRange.series ?? []).length).toBeLessThan(2);
+    expect(outOfRange.metrics?.marketValue).toBeGreaterThanOrEqual(0);
+
+    // 区间内仅 1 条快照时同样不绘制曲线
+    const latest = String(db.exec("SELECT MAX(snapshot_date) FROM snapshot")[0].values[0][0]);
+    const singleDay = queryAnalytics(db, {
+      portfolioId: "family",
+      dimension: "PORTFOLIO",
+      scope: "family",
+      l1Key: "",
+      l2Key: "",
+      rangeKey: "CUSTOM",
+      start: latest,
+      end: latest,
+    });
+    expect(singleDay.insufficient).toBe(true);
+    expect((singleDay.series ?? []).length).toBe(1);
   });
 });
 

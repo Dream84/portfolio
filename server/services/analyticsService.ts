@@ -63,12 +63,18 @@ export function queryAnalytics(db: Database, input: QueryInput): AnalyticsResult
 
   const summary = buildSummary(db, input.portfolioId);
   const breakdown = buildBreakdown(db, input.portfolioId);
-  const snapshots = listSnapshots(db, input.portfolioId).map((row) => ({
+  const allSnapshots = listSnapshots(db, input.portfolioId).map((row) => ({
     date: row.snapshotDate,
     value: row.totalValue,
     returnRate: row.cumulativeReturn,
     missing: false,
   }));
+
+  // 时间范围参与过滤：CUSTOM 使用 start/end，其余按最近快照回溯对应月份
+  const window = resolveWindow(input, allSnapshots);
+  const snapshots = window
+    ? allSnapshots.filter((row) => row.date >= window.from && row.date <= window.to)
+    : allSnapshots;
 
   const insufficient = snapshots.length < 2;
 
@@ -142,6 +148,22 @@ export function queryAnalytics(db: Database, input: QueryInput): AnalyticsResult
     shareRows,
     snapshots,
   };
+}
+
+function resolveWindow(
+  input: QueryInput,
+  snapshots: Array<{ date: string }>,
+): { from: string; to: string } | null {
+  if (input.rangeKey === "CUSTOM") {
+    return { from: String(input.start), to: String(input.end) };
+  }
+  const spanMonths: Record<string, number> = { "6M": 6, "1Y": 12, "3Y": 36, "5Y": 60 };
+  const span = spanMonths[input.rangeKey] ?? 6;
+  if (!snapshots.length) return null;
+  const latest = snapshots[snapshots.length - 1].date;
+  const pivot = new Date(`${latest}T00:00:00Z`);
+  pivot.setUTCMonth(pivot.getUTCMonth() - span);
+  return { from: pivot.toISOString().slice(0, 10), to: latest };
 }
 
 function round2(value: number): number {
