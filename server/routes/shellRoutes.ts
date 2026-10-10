@@ -2,6 +2,7 @@ import type http from "node:http";
 import type { Database } from "sql.js";
 import { login, logout } from "../auth/session.ts";
 import { query } from "../db/database.ts";
+import { listAccountsWithLabel, saveAccount } from "../services/accountService.ts";
 import { listCashAccounts, saveCashAccount, cashTotalCny } from "../services/cashAccountService.ts";
 import { deleteTrade, listTrades, saveTrade, transfer, undoDelete, updateTrade } from "../services/tradeService.ts";
 import { listProviders, probeProvider, saveProvider, setRefreshInterval, getRefreshInterval } from "../services/providerService.ts";
