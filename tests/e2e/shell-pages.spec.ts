@@ -15,6 +15,30 @@ test("新页面可从左侧菜单进入并渲染四个区域（AC-041）", async
   await expect(page.getByTestId("refresh-log-region")).toBeVisible();
 });
 
+test("AC-007 新增券商账户后列表新增 1 行且显示类型与状态", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("shell-nav-accounts").click();
+  await expect(page.getByTestId("account-maintain-region")).toBeVisible();
+  const name = `华泰证券e2e${Date.now()}`;
+  await page.getByTestId("account-name").fill(name);
+  await page.getByTestId("account-type").selectOption("BROKER");
+  await page.getByTestId("account-save").click();
+  await expect(page.getByTestId("account-message")).toHaveText("账户已保存");
+  const row = page.getByTestId("account-list").locator("li", { hasText: name });
+  await expect(row).toHaveCount(1);
+  await expect(row).toContainText("券商");
+  await expect(row).toContainText("启用");
+});
+
+test("AC-007 账户名称为空时拒绝保存并提示", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("shell-nav-accounts").click();
+  await expect(page.getByTestId("account-maintain-region")).toBeVisible();
+  await page.getByTestId("account-name").fill("   ");
+  await page.getByTestId("account-save").click();
+  await expect(page.getByTestId("account-message")).toHaveText("请输入账户名称");
+});
+
 test("AC-010 现金账户初始余额为负时逐字提示", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("shell-nav-accounts").click();
@@ -87,6 +111,7 @@ test("AC-050 基金净值未发布时展示上一净值", async ({ page }) => {
 test("AC-045 自动刷新周期小于 30 秒时回退默认并提示", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("shell-nav-data-sources").click();
+  await expect(page.getByTestId("page-data-sources")).toHaveAttribute("data-ready", "true");
   await expect(page.getByTestId("refresh-interval")).toHaveValue("60");
   await page.getByTestId("refresh-interval").fill("10");
   await expect(page.getByTestId("refresh-interval")).toHaveValue("10");

@@ -28,6 +28,7 @@ async function call(path: string, body?: unknown) {
 async function load() {
   const data = await call("/api/providers");
   rows.value = (data.rows ?? []) as ProviderRow[];
+  ready.value = true;
   if (!intervalLoaded) {
     interval.value = String(data.refreshIntervalSeconds ?? 60);
     intervalLoaded = true;
@@ -107,8 +108,8 @@ onMounted(load);
       <h2 class="text-sm font-semibold">刷新设置</h2>
       <div class="flex flex-wrap items-center gap-2 text-xs">
         <span>自动刷新周期（秒）</span>
-        <input v-model="interval" class="h-9 w-24 rounded-md border border-input bg-background px-3 py-1 text-sm" data-testid="refresh-interval" />
-        <Button type="button" size="sm" variant="ghost" data-testid="refresh-interval-save" @click="saveInterval">保存</Button>
+        <input v-model="interval" :disabled="!ready" class="h-9 w-24 rounded-md border border-input bg-background px-3 py-1 text-sm disabled:opacity-50" data-testid="refresh-interval" />
+        <Button type="button" size="sm" variant="ghost" :disabled="!ready" data-testid="refresh-interval-save" @click="saveInterval">保存</Button>
         <span class="text-muted-foreground" data-testid="refresh-interval-message">{{ intervalMessage }}</span>
       </div>
       <div class="flex flex-wrap items-center gap-2 text-xs">

@@ -37,7 +37,17 @@ export async function handleShellRoute(
     return bool(send, res, { ok: true }, 200, 200);
   }
   if (req.method === "GET" && path === "/api/accounts") {
-    return bool(send, res, { rows: query(db, "SELECT id, name, account_type, status FROM account ORDER BY name") }, 200, 200);
+    return bool(send, res, listAccountsWithLabel(db), 200, 200);
+  }
+  if (req.method === "POST" && path === "/api/accounts") {
+    const body = await readBody(req);
+    const result = saveAccount(db, {
+      name: String(body.name ?? ""),
+      accountType: String(body.accountType ?? "BROKER"),
+      status: body.status ? String(body.status) : "ENABLED",
+      confirmDisable: Boolean(body.confirmDisable),
+    });
+    return bool(send, res, result, 200, 400);
   }
   if (req.method === "GET" && path === "/api/cash-accounts") {
     return bool(send, res, { rows: listCashAccounts(db), totalCny: cashTotalCny(db) }, 200, 200);
