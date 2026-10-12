@@ -8,12 +8,21 @@ Add-Type -AssemblyName System.Drawing
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $nodeCandidates = @(
   (Join-Path $root "runtime\node.exe"),
-  "node"
+  (Join-Path $env:ProgramFiles "nodejs\node.exe"),
+  (Join-Path ${env:ProgramFiles(x86)} "nodejs\node.exe"),
+  (Join-Path $env:LOCALAPPDATA "Programs\nodejs\node.exe")
 )
 $node = $null
 foreach ($candidate in $nodeCandidates) {
-  if ($candidate -eq "node") { $node = "node"; break }
   if (Test-Path $candidate) { $node = $candidate; break }
+}
+if (-not $node) {
+  $cmd = Get-Command node -ErrorAction SilentlyContinue
+  if ($cmd) { $node = $cmd.Source }
+}
+if (-not $node) {
+  [System.Windows.Forms.MessageBox]::Show("未找到 Node 运行时：请把 node.exe 放到 myportfolio\runtime\ 后重试。", "MyPortfolio") | Out-Null
+  exit 1
 }
 
 $logFile = Join-Path $root "app.log"
