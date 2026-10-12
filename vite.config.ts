@@ -9,6 +9,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5183,
+    watch: { ignored: ["**/runtime/**", "**/dist/**", "**/app.log", "**/.myportfolio.pid"] },
     proxy: { "/api": "http://127.0.0.1:8787" },
   },
 });
