@@ -1,11 +1,14 @@
-# MyPortfolio 托盘启动器（Windows，仅使用系统自带 .NET/WinForms，无第三方依赖）
-# 行为：后台启动 launcher/app.mjs（静态页面 + 接口），托盘图标提供「打开页面 / 打开日志 / 退出」
-# 退出时连同接口子进程一起结束，避免端口残留。
+# MyPortfolio tray launcher (Windows, uses built-in .NET/WinForms only, no third-party deps)
+# Starts launcher/app.mjs in background (static site + API) and shows a tray icon with:
+#   Open MyPortfolio / View log / Exit
+# Exit also terminates the API child process so no port is left behind.
+# NOTE: keep this file ASCII-only so Windows PowerShell 5.1 (ANSI default) can parse it.
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+
 $nodeCandidates = @(
   (Join-Path $root "runtime\node.exe"),
   (Join-Path $env:ProgramFiles "nodejs\node.exe"),
@@ -21,39 +24,37 @@ if (-not $node) {
   if ($cmd) { $node = $cmd.Source }
 }
 if (-not $node) {
-  [System.Windows.Forms.MessageBox]::Show("未找到 Node 运行时：请把 node.exe 放到 myportfolio\runtime\ 后重试。", "MyPortfolio") | Out-Null
+  [System.Windows.Forms.MessageBox]::Show("Node runtime not found. Put node.exe into myportfolio\runtime\ and retry.", "MyPortfolio") | Out-Null
   exit 1
 }
 
 $logFile = Join-Path $root "app.log"
-$nodeArgs = @("launcher\app.mjs")
-
-$proc = Start-Process -FilePath $node -ArgumentList $nodeArgs -WorkingDirectory $root -PassThru -WindowStyle Hidden `
+$proc = Start-Process -FilePath $node -ArgumentList @("launcher\app.mjs") -WorkingDirectory $root -PassThru -WindowStyle Hidden `
   -RedirectStandardOutput $logFile -RedirectStandardError $logFile
 
 $url = "http://127.0.0.1:5183/"
-Start-Sleep -Seconds 3
+Start-Sleep -Seconds 4
 if (Test-Path $logFile) {
   $text = Get-Content $logFile -Raw -ErrorAction SilentlyContinue
-  if ($text -match "页面地址：(http://[^\s]+)") { $url = $Matches[1] }
+  if ($text -match "http://127\.0\.0\.1:[0-9]+") { $url = $Matches[0] }
 }
 
 $icon = New-Object System.Windows.Forms.NotifyIcon
 $icon.Icon = [System.Drawing.SystemIcons]::Application
-$icon.Text = "MyPortfolio 正在运行"
+$icon.Text = "MyPortfolio running"
 $icon.Visible = $true
 
 $menu = New-Object System.Windows.Forms.ContextMenuStrip
 
-$openItem = $menu.Items.Add("打开 MyPortfolio")
+$openItem = $menu.Items.Add("Open MyPortfolio")
 $openItem.add_Click({ Start-Process $url })
 
-$logItem = $menu.Items.Add("查看运行日志")
+$logItem = $menu.Items.Add("View log")
 $logItem.add_Click({ Start-Process notepad.exe $logFile })
 
 $menu.Items.Add("-") | Out-Null
 
-$exitItem = $menu.Items.Add("退出 MyPortfolio")
+$exitItem = $menu.Items.Add("Exit MyPortfolio")
 $exitItem.add_Click({
   if ($proc -and -not $proc.HasExited) {
     Start-Process taskkill -ArgumentList @("/PID", $proc.Id, "/T", "/F") -Wait -WindowStyle Hidden
@@ -68,7 +69,6 @@ $exitItem.add_Click({
 $icon.ContextMenuStrip = $menu
 $icon.add_MouseDoubleClick({ Start-Process $url })
 
-# 进程自行退出时同步移除托盘图标
 $timer = New-Object System.Windows.Forms.Timer
 $timer.Interval = 2000
 $timer.add_Tick({
