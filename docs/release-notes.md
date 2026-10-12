@@ -45,7 +45,7 @@
 
 ## 4. 已知限制与遗留项
 
-1. **设计退出门禁未通过**（`design-exit` FAIL）：缺少 3 项流程元数据——需求阶段出口状态（`requirements_exit_status`）、设计基线（`design_baseline`）、评审记录（`review_record`）。**属流程记录缺口，不影响本版交付物与功能**；补齐元数据后需再次复验。
+1. **设计退出门禁已补齐（2026-10-12）**：PRD 置 `requirements_exit_status: passed` 并给出 `requirements_baseline`；两个 spec 置 `design_exit_status: passed`、`design_baseline: .project/design/DESIGN.md`、`review_record: .project/specs/<name>/review.md`（新增两份设计评审记录，逐条记录评审对象、方式、覆盖内容、证据与发现处置）。复验结果：`design-exit` 两个 spec 均 **PASS**；连同 spec-lint / plan-lint / ac-coverage(--tests) / dfx-coverage 共 **10/10 PASS**。
 2. **本轮流程复盘**：早期批量落盘脚本使用 `str.replace` 未校验替换结果，导致 `/api/accounts` 的 import 静默缺失（接口 500）；已改为「用接口自检验证」并修复。启动器在 Windows PowerShell 5.1 下先后暴露脚本编码与日志重定向两个缺陷，均已修复并纳入验证清单。
 3. `public/` 构建产物已随仓库提供；**修改前端源码后需重新构建一次**才会反映到双击启动的页面。
 4. 数据源页 `ready` 标记已用于「未就绪时禁用周期输入与保存」；`app.log` / `app.err.log` / `.myportfolio.pid` 已加入 `.gitignore`。
