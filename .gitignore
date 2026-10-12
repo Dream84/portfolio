@@ -3,3 +3,7 @@ data/
 dist/
 
 test-results/
+
+app.log
+app.err.log
+.myportfolio.pid
