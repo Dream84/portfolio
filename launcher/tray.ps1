@@ -29,8 +29,14 @@ if (-not $node) {
 }
 
 $logFile = Join-Path $root "app.log"
+$errFile = Join-Path $root "app.err.log"
 $proc = Start-Process -FilePath $node -ArgumentList @("launcher\app.mjs") -WorkingDirectory $root -PassThru -WindowStyle Hidden `
-  -RedirectStandardOutput $logFile -RedirectStandardError $logFile
+  -RedirectStandardOutput $logFile -RedirectStandardError $errFile
+
+if (-not $proc) {
+  [System.Windows.Forms.MessageBox]::Show("Failed to start launcher/app.mjs", "MyPortfolio") | Out-Null
+  exit 1
+}
 
 $url = "http://127.0.0.1:5183/"
 Start-Sleep -Seconds 4
