@@ -46,7 +46,12 @@ if (Test-Path $logFile) {
 }
 
 $icon = New-Object System.Windows.Forms.NotifyIcon
-$icon.Icon = [System.Drawing.SystemIcons]::Application
+$icoPath = Join-Path $root "launcher\app.ico"
+if (Test-Path $icoPath) {
+  $icon.Icon = New-Object System.Drawing.Icon($icoPath)
+} else {
+  $icon.Icon = [System.Drawing.SystemIcons]::Application
+}
 $icon.Text = "MyPortfolio running"
 $icon.Visible = $true
 

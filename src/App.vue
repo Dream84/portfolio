@@ -95,7 +95,10 @@ function refreshQuotes() {
     <div class="mx-auto grid min-h-screen max-w-[1440px] gap-4 p-4" :class="sidebarVisible ? 'grid-cols-[248px_minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]'">
       <aside v-show="sidebarVisible" class="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-lg border border-border bg-card">
         <header class="border-b border-border p-4">
-          <h1 class="text-sm font-semibold">MyPortfolio</h1>
+          <div class="flex items-center gap-2">
+            <img src="/icon.svg" alt="MyPortfolio" class="h-6 w-6 rounded" />
+            <h1 class="text-sm font-semibold">MyPortfolio</h1>
+          </div>
           <p class="mt-1 text-xs text-muted-foreground">本地投资组合记录与分析工具 · 仅 Windows</p>
         </header>
 
